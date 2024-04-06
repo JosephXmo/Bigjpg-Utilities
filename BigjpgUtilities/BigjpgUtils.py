@@ -3,14 +3,17 @@ import json
 
 apiKey = ''
 
+
 def setAPIKey(keyArg):
     global apiKey
     apiKey = keyArg
 
+
 def printAPIKey():
     print(apiKey)
 
-def initializeEnlargeTask(style, noise, x2, urlMode, filePath):
+
+def initializeEnlargeTask(style, noise, x2, filePath):
     if apiKey == '':
         print("Attention: You might not set API key yet. Without an API key, you cannot establish a enlarge task.")
 
@@ -36,21 +39,22 @@ def initializeEnlargeTask(style, noise, x2, urlMode, filePath):
     else:
         noise = ''
 
+    # 2 -> 4 -> 8 -> 16
     x2 = int(x2 / 2)
 
+    # Auto-generated file name
     file_name = filePath.split('/')[-1]
-    
-    input = filePath
 
     data = {
         'style': style,
         'noise': noise,
         'x2': str(x2),
         'file_name': file_name,
-        'input': input
+        'input': filePath
     }
 
     return data
+
 
 def enlargeImage(task):
     if apiKey == '':
@@ -58,23 +62,28 @@ def enlargeImage(task):
         return ''
 
     enlargeSession = requests.post(
-        url = 'https://www.bigjpg.com/api/task/',
-        headers = {'X-API-KEY': apiKey},
-        data = json.dumps(task)
+        url='https://www.bigjpg.com/api/task/',
+        headers={'X-API-KEY': apiKey},
+        data=json.dumps(task)
     )
     tid = dict(enlargeSession.json()).get('tid')
     return tid
 
+
 def queryEnlargeSession(tid):
-    enlargeSession = requests.get(url = 'https://www.bigjpg.com/api/task/' + tid)
+    enlargeSession = requests.get(url='https://www.bigjpg.com/api/task/' + tid)
     return dict(enlargeSession.json()).get(tid)
 
+
 def retryEnlargeSession(tid):
-    retrySession = requests.post(url = 'https://www.bigjpg.com/api/task/' + tid)
+    retrySession = requests.post(url='https://www.bigjpg.com/api/task/' + tid)
     if dict(retrySession.json()).get('status') == 'ok':
-        return session
+        print("Enlarge session is succeeded. No need to retry.")
+        return tid
     else:
+        # TODO: The HTTP response of a retry request is not tested. Should be tested if a manual failure is possible.
         return dict(retrySession.json()).get(tid)
+
 
 def printSession(tid):
     session = dict(queryEnlargeSession(tid))
@@ -86,9 +95,11 @@ def printSession(tid):
         elif dict(session).get('status') == 'new':
             print("Status: Enlarge in progress, please wait...")
         elif dict(session).get('status') == 'success':
-            print("Status: Success, " + str(int(dict(session).get('size')) / 1000) + " KB in total.\nDownload URL: " + dict(session).get('url'))
+            print("Status: Success, " + str(
+                int(dict(session).get('size')) / 1000) + " KB in total.\nDownload URL: " + dict(session).get('url'))
         else:
-            print("Unknown status \"" + session.get('status') + "\" received. Please submit raw data to developer for further help.")
+            print("Unknown status \"" + session.get(
+                'status') + "\" received. Please submit raw data to developer for further help.")
             print("Raw data received: ")
             print(json.dumps(session, indent=4))
     else:
