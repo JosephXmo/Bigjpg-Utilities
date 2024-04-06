@@ -14,6 +14,7 @@ def initializeEnlargeTask(style, noise, x2, urlMode, filePath):
     if apiKey == '':
         print("Attention: You might not set API key yet. Without an API key, you cannot establish a enlarge task.")
 
+    # a / p
     if style == 'a':
         style = 'art'
     elif style == 'p':
@@ -21,6 +22,7 @@ def initializeEnlargeTask(style, noise, x2, urlMode, filePath):
     else:
         style = ''
 
+    # n -> l -> m -> h -> vh
     if noise == 'n':
         noise = '-1'
     elif noise == 'l':
@@ -37,10 +39,8 @@ def initializeEnlargeTask(style, noise, x2, urlMode, filePath):
     x2 = int(x2 / 2)
 
     file_name = filePath.split('/')[-1]
-    if urlMode == 'l':
-        input = 'file://' + filePath
-    elif urlMode == 'w':
-        input = filePath
+    
+    input = filePath
 
     data = {
         'style': style,
